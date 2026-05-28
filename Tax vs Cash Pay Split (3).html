@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pay Split Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #0f172a;
+            --bg-surface: #1e293b;
+            --bg-surface-hover: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --accent-tax: #3b82f6;
+            --accent-cash: #10b981;
+            --accent-total: #8b5cf6;
+            --super-color: #f59e0b;
+            --radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .dashboard {
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .header {
+            margin-bottom: 2rem;
+            text-align: left;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: linear-gradient(to right, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .grid-layout {
+                grid-template-columns: 3fr 2fr;
+                align-items: start;
+            }
+            .results-panel {
+                position: sticky;
+                top: 2rem;
+            }
+        }
+
+        .card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .card:last-child { margin-bottom: 0; }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.25rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tax-card .card-title { color: var(--accent-tax); }
+        .cash-card .card-title { color: var(--accent-cash); }
+        .summary-card { border-top: 4px solid var(--accent-total); }
+
+        .input-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px dashed rgba(255,255,255,0.05);
+        }
+
+        .input-row:last-child { border-bottom: none; padding-bottom: 0; }
+
+        .label-col {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .label-main {
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .label-sub {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        input[type="number"] {
+            width: 90px;
+            background: var(--bg-base);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 0.6rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            text-align: right;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--accent-tax);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+            background: var(--bg-surface-hover);
+        }
+
+        .cash-card input[type="number"]:focus {
+            border-color: var(--accent-cash);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+        }
+
+        /* Results Panel Styling */
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+        }
+
+        .result-value {
+            font-weight: 600;
+            color: var(--text-main);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .super-item {
+            color: var(--super-color);
+            background: rgba(245, 158, 11, 0.1);
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin: 0.5rem 0;
+        }
+        
+        .super-item .result-value { color: var(--super-color); }
+
+        .divider {
+            height: 1px;
+            background: var(--border-color);
+            margin: 1rem 0;
+        }
+
+        .total-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+        }
+
+        .total-label {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .total-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: -0.02em;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard">
+        <div class="header">
+            <h1>Pay Split Engine</h1>
+            <p>Interactive tax, cash, and superannuation modeling.</p>
+        </div>
+
+        <div class="grid-layout">
+            
+            <!-- Left Column: Inputs -->
+            <div class="input-panels">
+                
+                <div class="card tax-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right:8px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"></path></svg>
+                            Taxable Shifts (11.22% Tax)
+                        </div>
+                    </div>
+                    
+                    <div class="input-row">
+                        <div class="label-col">
+                            <span class="label-main">Weekdays</span>
+                            <span class="label-sub">$25.85 / hr</span>
+                        </div>
+                        <input type="number" id="taxWkdy" min="0" value="30">
+                    </div>
+                    <div class="input-row">
+                        <div class="label-col">
+                            <span class="label-main">Saturday</span>
+                            <span class="label-sub">$32.31 / hr</span>
+                        </div>
+                        <input type="number" id="taxSat" min="0" value="0">
+                    </div>
+                    <div class="input-row">
+                        <div class="label-col">
+                            <span class="label-main">Sunday</span>
+                            <span class="label-sub">$38.78 / hr</span>
+                        </div>
+                        <input type="number" id="taxSun" min="0" value="7">
+                    </div>
+                    <div class="input-row">
+                        <div class="label-col">
+                            <span class="label-main">Evening</span>
+                            <span class="label-sub">$28.66 / hr</span>
+                        </div>
+                        <input type="number" id="taxEve" min="0" step="0.5" value="0">
+                    </div>
+                    <div class="input-row">
+                        <div class="label-col">
+                            <span class="label-main">Night Shift</span>
+                            <span class="label-sub">$30.007 / hr</span>
+                        </div>
+                        <input type="number" id="taxNight" min="0" step="0.5" value="5">
+                    </div>
+                </div>
+
+                <div class="card cash-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right:8px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Cash Shifts
+                        </div>
+                    </div>
+                    
+                    <div class="input-row">
+                        <div class="label-col">
+                            <span class="label-main">Weekdays</span>
+                            <span class="label-sub">$25.00 / hr</span>
+                        </div>
+                        <input type="number" id="cashWkdy" min="0" value="28">
+                    </div>
+                    <div class="input-row">
+                        <div class="label-col">
+                            <span class="label-main">Saturday</span>
+                            <span class="label-sub">$27.00 / hr</span>
+                        </div>
+                        <input type="number" id="cashSat" min="0" value="0">
+                    </div>
+                    <div class="input-row">
+                        <div class="label-col">
+                            <span class="label-main">Sunday</span>
+                            <span class="label-sub">$30.00 / hr</span>
+                        </div>
+                        <input type="number" id="cashSun" min="0" value="0">
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Column: Results -->
+            <div class="results-panel">
+                <div class="card summary-card">
+                    <div class="card-header">
+                        <div class="card-title" style="color: var(--text-main);">
+                            Live Summary
+                        </div>
+                    </div>
+
+                    <div class="result-item">
+                        <span>Total Hours</span>
+                        <span class="result-value" id="resHours">0</span>
+                    </div>
+                    
+                    <div class="divider"></div>
+
+                    <div class="result-item">
+                        <span>Gross Tax Pay</span>
+                        <span class="result-value" id="resTaxGross">$0.00</span>
+                    </div>
+                    
+                    <div class="result-item super-item">
+                        <span>Super (12%)</span>
+                        <span class="result-value" id="resSuper">$0.00</span>
+                    </div>
+
+                    <div class="result-item">
+                        <span>Net Tax Pay <span style="font-size:0.75rem; color:#64748b;">(After 11.22%)</span></span>
+                        <span class="result-value" id="resTaxNet" style="color: #60a5fa;">$0.00</span>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <div class="result-item">
+                        <span>Total Cash Pay</span>
+                        <span class="result-value" id="resCash" style="color: #34d399;">$0.00</span>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <div class="total-item">
+                        <span class="total-label">Take-Home</span>
+                        <span class="total-value" id="resTotal">$0.00</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Data Configuration
+        const config = {
+            taxRate: 0.1122,
+            superRate: 0.12,
+            rates: {
+                tax: { wkdy: 25.85, sat: 32.31, sun: 38.78, eve: 28.66, night: 30.007 },
+                cash: { wkdy: 25.00, sat: 27.00, sun: 30.00 }
+            }
+        };
+
+        const inputs = document.querySelectorAll('input[type="number"]');
+        const formatMoney = (num) => '$' + num.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        
+        function calculate() {
+            const getVal = (id) => parseFloat(document.getElementById(id).value) || 0;
+
+            const tW = getVal('taxWkdy'), tSat = getVal('taxSat'), tSun = getVal('taxSun'), tEve = getVal('taxEve'), tN = getVal('taxNight');
+            const cW = getVal('cashWkdy'), cSat = getVal('cashSat'), cSun = getVal('cashSun');
+
+            const totalHours = tW + tSat + tSun + tEve + tN + cW + cSat + cSun;
+
+            const taxGross = (tW * config.rates.tax.wkdy) + (tSat * config.rates.tax.sat) + (tSun * config.rates.tax.sun) + (tEve * config.rates.tax.eve) + (tN * config.rates.tax.night);
+            const taxNet = taxGross * (1 - config.taxRate);
+            const superAmount = taxGross * config.superRate;
+
+            const cashTotal = (cW * config.rates.cash.wkdy) + (cSat * config.rates.cash.sat) + (cSun * config.rates.cash.sun);
+            const totalTakeHome = taxNet + cashTotal;
+
+            // DOM Updates
+            document.getElementById('resHours').textContent = totalHours;
+            document.getElementById('resTaxGross').textContent = formatMoney(taxGross);
+            document.getElementById('resSuper').textContent = formatMoney(superAmount);
+            document.getElementById('resTaxNet').textContent = formatMoney(taxNet);
+            document.getElementById('resCash').textContent = formatMoney(cashTotal);
+            document.getElementById('resTotal').textContent = formatMoney(totalTakeHome);
+        }
+
+        // Bind events
+        inputs.forEach(input => {
+            input.addEventListener('input', calculate);
+            input.addEventListener('focus', function() { this.select(); });
+        });
+        
+        // Init
+        calculate();
+    </script>
+</body>
+</html>
